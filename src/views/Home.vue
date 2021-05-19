@@ -1,7 +1,15 @@
+<!--
+ * @Author: your name
+ * @Date: 2021-05-17 18:11:33
+ * @LastEditTime: 2021-05-19 11:54:43
+ * @LastEditors: Please set LastEditors
+ * @Description: In User Settings Edit
+ * @FilePath: \vue-app\src\views\Home.vue
+-->
 <template>
   <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png" />
-    <HelloWorld msg="Welcome to Your Vue.js App" />
+    <!-- <img alt="Vue logo" src="../assets/logo.png" /> -->
+    <!-- <HelloWorld msg="Welcome to Your Vue.js App" /> -->
     <van-button type="primary" block>块级元素</van-button>
     <van-cell-group>
       <van-cell title="单元格" value="内容" />
@@ -19,12 +27,12 @@
 
 <script>
 // @ is an alias to /src
-import HelloWorld from "@/components/HelloWorld.vue";
+// import HelloWorld from "@/components/HelloWorld.vue";
 import { Button, Cell, CellGroup } from "vant";
 export default {
   name: "Home",
   components: {
-    HelloWorld,
+    // HelloWorld,
     [Button.name]: Button,
     [Cell.name]: Cell,
     [CellGroup.name]: CellGroup
