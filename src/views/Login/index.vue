@@ -1,9 +1,9 @@
 <!--
  * @Author: your name
  * @Date: 2021-05-21 16:32:41
- * @LastEditTime: 2021-05-21 17:49:01
+ * @LastEditTime: 2021-05-28 14:51:51
  * @LastEditors: Please set LastEditors
- * @Description: In User Settings Edit
+ * @Description: 登录页
  * @FilePath: \vue-app\src\views\login.vue
 -->
 <template>
@@ -49,9 +49,50 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+  background: linear-gradient(307deg, #246066, #242866);
+  background-size: 400% 400%;
+
+  -webkit-animation: AnimationName 6s ease infinite;
+  -moz-animation: AnimationName 6s ease infinite;
+  animation: AnimationName 6s ease infinite;
+
+  @-webkit-keyframes AnimationName {
+    0% {
+      background-position: 0% 29%;
+    }
+    50% {
+      background-position: 100% 72%;
+    }
+    100% {
+      background-position: 0% 29%;
+    }
+  }
+  @-moz-keyframes AnimationName {
+    0% {
+      background-position: 0% 29%;
+    }
+    50% {
+      background-position: 100% 72%;
+    }
+    100% {
+      background-position: 0% 29%;
+    }
+  }
+  @keyframes AnimationName {
+    0% {
+      background-position: 0% 29%;
+    }
+    50% {
+      background-position: 100% 72%;
+    }
+    100% {
+      background-position: 0% 29%;
+    }
+  }
   .login-box {
     width: 300px;
     height: auto;
+    opacity: 0.7;
   }
 }
 </style>

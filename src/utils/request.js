@@ -1,112 +1,149 @@
-/*
- * @Author: your name
- * @Date: 2021-05-19 09:58:59
- * @LastEditTime: 2021-05-19 15:02:39
- * @LastEditors: Please set LastEditors
- * @Description: axios 请求
- * @FilePath: \vue-app\src\utils\request.js
+/** axios封装
+ * 请求拦截、相应拦截、错误统一处理
  */
-/** **   request.js   ****/
-// 导入axios
 import axios from "axios";
-// 使用element-ui Message做消息提醒
-import { Message } from "element-ui";
-// 1. 创建新的axios实例，
-const service = axios.create({
-  // 公共接口--这里注意后面会讲
-  baseURL: process.env.BASE_API,
-  // 超时时间 单位是ms，这里设置了3s的超时时间
-  timeout: 3 * 1000
-});
-// 2.请求拦截器
-service.interceptors.request.use(
+// import QS from "qs";
+import { Toast } from "vant";
+import store from "../store/index";
+import router from "../router/index";
+
+// 请求超时时间
+axios.defaults.timeout = 10000;
+
+// post请求头
+axios.defaults.headers.post["Content-Type"] =
+  "application/x-www-form-urlencoded;charset=UTF-8";
+
+// 请求拦截器
+axios.interceptors.request.use(
   config => {
-    // 发请求前做的一些处理，数据转化，配置请求头，设置token,设置loading等，根据需求去添加
-    config.data = JSON.stringify(config.data); // 数据转化,也可以使用qs转换
-    config.headers = {
-      "Content-Type": "application/x-www-form-urlencoded" // 配置请求头
-    };
-    // 注意使用token的时候需要引入cookie方法或者用本地localStorage等方法，推荐js-cookie
-    // const token = getCookie("名称"); // 这里取token之前，你肯定需要先拿到token,存一下
-    const token = "";
-    if (token) {
-      config.params = { token: token }; // 如果要求携带在参数中
-      config.headers.token = token; // 如果要求携带在请求头中
+    // console.log(config);
+    // 每次发送请求之前判断是否存在token，如果存在，则统一在http请求的header都加上token，不用每次请求都手动添加了
+    // 即使本地存在token，也有可能token是过期的，所以在响应拦截器中要对返回状态进行判断
+    const { url } = config;
+    const keyObj = {};
+    if (!url.includes("login")) {
+      const token = store.getters["user/getToken"];
+      keyObj.key = token;
+    }
+
+    // token && (config.headers.Authorization = token);
+    if (config.method === "post") {
+      config.data = {
+        ...config.data,
+        ...keyObj
+      };
+    } else if (config.method === "get") {
+      config.params = {
+        ...config.params,
+        ...keyObj
+      };
     }
     return config;
   },
   error => {
-    Promise.reject(error);
+    return Promise.error(error);
   }
 );
 
-// 3.响应拦截器
-service.interceptors.response.use(
+// 响应拦截器
+axios.interceptors.response.use(
   response => {
-    // 接收到响应数据并成功后的一些共有的处理，关闭loading等
-
-    return response;
-  },
-  error => {
-    /** *** 接收到异常响应的处理开始 *****/
-    if (error && error.response) {
-      // 1.公共错误处理
-      // 2.根据响应码具体处理
-      switch (error.response.status) {
-        case 400:
-          error.message = "错误请求";
-          break;
-        case 401:
-          error.message = "未授权，请重新登录";
-          break;
-        case 403:
-          error.message = "拒绝访问";
-          break;
-        case 404:
-          error.message = "请求错误,未找到该资源";
-          window.location.href = "/NotFound";
-          break;
-        case 405:
-          error.message = "请求方法未允许";
-          break;
-        case 408:
-          error.message = "请求超时";
-          break;
-        case 500:
-          error.message = "服务器端出错";
-          break;
-        case 501:
-          error.message = "网络未实现";
-          break;
-        case 502:
-          error.message = "网络错误";
-          break;
-        case 503:
-          error.message = "服务不可用";
-          break;
-        case 504:
-          error.message = "网络超时";
-          break;
-        case 505:
-          error.message = "http版本不支持该请求";
-          break;
-        default:
-          error.message = `连接错误${error.response.status}`;
-      }
+    if (response.status === 200) {
+      return Promise.resolve(response);
     } else {
-      // 超时处理
-      if (JSON.stringify(error).includes("timeout")) {
-        Message.error("服务器响应超时，请刷新当前页");
-      }
-      error.message = "连接服务器失败";
+      return Promise.reject(response);
     }
-
-    Message.error(error.message);
-    /** *** 处理结束 *****/
-    // 如果不需要错误处理，以上的处理过程都可省略
-    return Promise.resolve(error.response);
+  },
+  // 服务器状态码不是200的情况
+  error => {
+    if (error.response.status) {
+      switch (error.response.status) {
+        // 401: 未登录
+        // 未登录则跳转登录页面，并携带当前页面的路径
+        // 在登录成功后返回当前页面，这一步需要在登录页操作。
+        case 401:
+          router.replace({
+            path: "/login",
+            query: { redirect: router.currentRoute.fullPath }
+          });
+          break;
+        // 403 token过期
+        // 登录过期对用户进行提示
+        // 清除本地token和清空vuex中token对象
+        // 跳转登录页面
+        case 403:
+          Toast({
+            message: "登录过期，请重新登录",
+            duration: 1000,
+            forbidClick: true
+          });
+          // 清除token
+          localStorage.removeItem("token");
+          store.commit("loginSuccess", null);
+          // 跳转登录页面，并将要浏览的页面fullPath传过去，登录成功后跳转需要访问的页面
+          setTimeout(() => {
+            router.replace({
+              path: "/login",
+              query: {
+                redirect: router.currentRoute.fullPath
+              }
+            });
+          }, 1000);
+          break;
+        // 404请求不存在
+        case 404:
+          Toast({
+            message: "网络请求不存在",
+            duration: 1500,
+            forbidClick: true
+          });
+          break;
+        // 其他错误，直接抛出错误提示
+        default:
+          Toast({
+            message: error.response.data.message,
+            duration: 1500,
+            forbidClick: true
+          });
+      }
+      return Promise.reject(error.response);
+    }
   }
 );
-
-// 4.导出文件
-export default service;
+/**
+ * get方法，对应get请求
+ * @param {String} url [请求的url地址]
+ * @param {Object} params [请求时携带的参数]
+ */
+export function get(url, params) {
+  return new Promise((resolve, reject) => {
+    axios
+      .get(url, {
+        params: params
+      })
+      .then(res => {
+        resolve(res.data);
+      })
+      .catch(err => {
+        reject(err.data);
+      });
+  });
+}
+/**
+ * post方法，对应post请求
+ * @param {String} url [请求的url地址]
+ * @param {Object} params [请求时携带的参数]
+ */
+export function post(url, params) {
+  return new Promise((resolve, reject) => {
+    axios
+      .post(url, params)
+      .then(res => {
+        resolve(res.data);
+      })
+      .catch(err => {
+        reject(err.data);
+      });
+  });
+}

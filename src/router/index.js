@@ -1,34 +1,25 @@
 /*
  * @Author: your name
  * @Date: 2021-05-17 18:11:33
- * @LastEditTime: 2021-05-21 17:04:51
+ * @LastEditTime: 2021-06-01 09:15:47
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \vue-app\src\router\index.js
  */
 import Vue from "vue";
 import VueRouter from "vue-router";
-import Home from "../views/Home.vue";
 import store from "@/store";
+import { Toast } from "vant";
 
 Vue.use(VueRouter);
 
 const routes = [
   {
     path: "/",
-    name: "Home",
-    component: Home,
-    meta: { requiredLogin: false }
-  },
-  {
-    path: "/about",
-    name: "About",
-    meta: { requiredLogin: false },
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
+    name: "HomePage",
     component: () =>
-      import(/* webpackChunkName: "about" */ "../views/About.vue")
+      import(/* webpackChunkName: "Homepage" */ "../views/Homepage/index"),
+    meta: { requiredLogin: true }
   },
   {
     path: "/login",
@@ -50,8 +41,9 @@ const router = new VueRouter({
 router.beforeEach((to, from, next) => {
   const { requiredLogin } = to.meta;
   if (requiredLogin) {
-    if (!store.getters["user/user"]) {
-      next("About");
+    if (!store.getters["user/getToken"]) {
+      Toast("登录过期，请重新登录");
+      next("login");
     } else {
       next();
     }

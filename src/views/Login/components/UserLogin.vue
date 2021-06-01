@@ -1,15 +1,15 @@
 <!--
- * @Author: your name
+ * @Author: gzh
  * @Date: 2021-05-21 17:05:40
- * @LastEditTime: 2021-05-21 17:59:30
+ * @LastEditTime: 2021-05-28 14:50:56
  * @LastEditors: Please set LastEditors
- * @Description: In User Settings Edit
+ * @Description: 用户登录
  * @FilePath: \vue-app\src\views\Login\components\userLogin.vue
 -->
 <template>
   <van-form @submit="onSubmit">
     <van-field
-      v-model="username"
+      v-model="userName"
       name="用户名"
       label="用户名"
       placeholder="用户名"
@@ -23,7 +23,7 @@
       placeholder="密码"
       :rules="[{ required: true, message: '请填写密码' }]"
     />
-    <div style="margin: 16px;">
+    <div style="margin-top: 16px;">
       <van-button square block type="info" size="small" native-type="submit"
         >用户提交</van-button
       >
@@ -31,8 +31,11 @@
   </van-form>
 </template>
 <script>
-// @ is an alias to /sr
-import { Form, Field, Button } from "vant";
+// @ is an alias to /src
+import { Form, Field, Button, Toast } from "vant";
+import { loginApi } from "@/services/userApi";
+import { mapMutations } from "vuex";
+
 export default {
   name: "UserLogin",
   components: {
@@ -42,13 +45,27 @@ export default {
   },
   data() {
     return {
-      username: "",
+      userName: "",
       password: ""
     };
   },
   methods: {
+    ...mapMutations("user", ["setToken", "setUser"]),
     onSubmit() {
-      console.log(1);
+      loginApi({ userName: this.userName, password: this.password })
+        .then(res => {
+          // 登录成功 跳转
+          if (res.status === "ok") {
+            const { ukey = "" } = res;
+            this.setToken(ukey);
+            this.setUser(res);
+            this.$router.push("/");
+          }
+        })
+        .catch(e => {
+          console.error(e);
+          Toast(e?.message || "");
+        });
     }
   }
 };

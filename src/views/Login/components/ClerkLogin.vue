@@ -1,9 +1,9 @@
 <!--
- * @Author: your name
+ * @Author: gzh
  * @Date: 2021-05-21 17:05:40
- * @LastEditTime: 2021-05-21 17:55:54
+ * @LastEditTime: 2021-05-28 14:50:48
  * @LastEditors: Please set LastEditors
- * @Description: In User Settings Edit
+ * @Description: 店员登录
  * @FilePath: \vue-app\src\views\Login\components\userLogin.vue
 -->
 <template>
@@ -23,7 +23,7 @@
       placeholder="密码"
       :rules="[{ required: true, message: '请填写密码' }]"
     />
-    <div style="margin: 16px;">
+    <div style="margin-top: 16px;">
       <van-button square block type="info" size="small" native-type="submit"
         >店员提交</van-button
       >
@@ -32,7 +32,9 @@
 </template>
 <script>
 // @ is an alias to /sr
-import { Form, Field, Button } from "vant";
+import { Form, Field, Button, Toast } from "vant";
+import { clerkwebLoginApi } from "@/services/userApi";
+import { mapMutations } from "vuex";
 export default {
   name: "ClerkLogin",
   components: {
@@ -47,8 +49,25 @@ export default {
     };
   },
   methods: {
+    ...mapMutations("user", ["setToken", "setUser"]),
     onSubmit() {
-      console.log(1);
+      clerkwebLoginApi({ username: this.username, password: this.password })
+        .then(res => {
+          // 登录成功 跳转
+          if (+res.code === 200) {
+            const {
+              datas,
+              datas: { key = "" }
+            } = res;
+            this.setToken(key);
+            this.setUser(datas);
+            this.$router.push("/");
+          }
+        })
+        .catch(e => {
+          console.error(e);
+          Toast(e?.message || "");
+        });
     }
   }
 };
