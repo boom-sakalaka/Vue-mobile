@@ -1,10 +1,10 @@
 <!--
  * @Author: gzh
  * @Date: 2021-05-21 17:05:40
- * @LastEditTime: 2021-05-28 14:50:56
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-08-16 21:22:40
+ * @LastEditors: GZH
  * @Description: 用户登录
- * @FilePath: \vue-app\src\views\Login\components\userLogin.vue
+ * @FilePath: \Vue-mobile\src\views\Login\components\UserLogin.vue
 -->
 <template>
   <van-form @submit="onSubmit">
@@ -64,7 +64,7 @@ export default {
         })
         .catch(e => {
           console.error(e);
-          Toast(e?.message || "");
+          Toast(e.message || "");
         });
     }
   }

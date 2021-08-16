@@ -1,10 +1,10 @@
 <!--
  * @Author: your name
  * @Date: 2021-05-21 16:32:41
- * @LastEditTime: 2021-06-01 09:14:38
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-08-16 21:22:26
+ * @LastEditors: GZH
  * @Description: In User Settings Edit
- * @FilePath: \vue-app\src\views\login.vue
+ * @FilePath: \Vue-mobile\src\views\Homepage\index.vue
 -->
 <template>
   <div class="homePage-conter">
@@ -39,7 +39,7 @@ export default {
   width: 100%;
   height: 100%;
   position: relative;
-  background: url("../../assets/home_bg.png") no-repeat;
+  // background: url("../../assets/home_bg.png") no-repeat;
   background-size: 100% 100%;
   background-attachment: fixed;
   .menu-conter {
